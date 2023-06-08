@@ -3,11 +3,6 @@ Run Paul's repo
 - swap out index layout page for blog layout page
 
 - Components
-    - PageHeader
-    - fetchAPI
-    - BlogList
-    - ArticleSelect
-    - Post
     - 
 
 
