@@ -84,7 +84,13 @@ Answer `y` to `The import will delete all assets and data in your database. Are 
 >
 > The data used to seed the database is from the Strapi Nextjs Starter.
 
-After a successful import, rerun your Strapi backend server and login to your admin panel. You should see the newly imported `content` and `collection types`.
+After a successful import, rerun your Strapi backend server. 
+
+```bash
+yarn develop
+```
+
+In your browser, login to your admin panel. You should see the newly imported `content` and `collection types`.
 
 ![Updated Dashboard]()
 
@@ -120,7 +126,7 @@ Delete the following auto-generated files in your `frontend` directory as we wil
 - `src/app/page.tsx`
 - `src/app/globals.css`
 
-## Step 5: Set up Strapi API Tokens
+## Step 5: Set up Strapi API Token
 
 Create a `.env` file in the root of your `frontend` directory and paste the following environment variables:
 
@@ -130,7 +136,7 @@ NEXT_PUBLIC_PAGE_LIMIT=6
 NEXT_PUBLIC_STRAPI_API_URL=http://localhost:1337
 ```
 
-Go back to your Strapi Admin panel to create the API tokens to be used for displaying content and form submission.
+Go back to your Strapi Admin panel to create the API token to be used for displaying content.
 
 Inside your Strapi Admin Panel, click on `Settings`, select `API Tokens` and click on the `+ Create new API Token` button.
 
@@ -207,7 +213,7 @@ The `middleware.ts` file serves the purpose of adding internationalization (i18n
 
 Open up `middleware.ts` and add the following code:
 
-```tsx
+```ts
 // ./frontend/src/middleware.ts
 
 import type { NextRequest } from 'next/server';
@@ -271,7 +277,7 @@ The `middleware.ts ` file imports `NextRequest` and `NextResponse` types to hand
 
 In this step we will create two files, `api-helpers.ts` and `fetch-api.tsx` to fetch data from the Strapi API backend.
 
-In your `frontend/src/app` directory, create a new directory named `[lang]` for handling the locales we defined in `i18n-config.ts`.
+In your `frontend/src/app` directory, create a new directory named `[lang]` for handling the locales we defined in `i18n-config.ts`. This handled through Next.js' [dynamic routes](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes) feature.
 
 ```bash
 mkdir frontend/src/app/[lang]
@@ -517,7 +523,7 @@ This code sets up a Next.js page that will fetch a list of all the articles from
 
 The `fetchData` function uses the `fetchAPI` function to make the API request. It retrieves the `NEXT_PUBLIC_STRAPI_API_TOKEN` from the environment variables to construct the request path and URL parameters.
 
-Notice that the `page.tsx` file imports a `Loader`, `PostList`, and `PageHeader` components, but these are yet to be created. Let's create the files.
+Notice that the `page.tsx` file imports a `Loader`, a `PostList`, and a `PageHeader` components, but these are yet to be created. Let's create the files.
 
 Create a `components` folder in the `src/app/[lang]/` folder to store all your components:
 
@@ -1264,6 +1270,8 @@ body {
 
 Make sure your Strapi backend server is running, then start your Next.js frontend development server.
 
+Run the following command in the `frontend` directory:
+
 ```bash
 yarn dev
 ```
@@ -1274,7 +1282,847 @@ Visit `http://localhost:3000` in your browser and you should see the home page o
 
 Great! The home page is working and is displaying a grid of all posts as expected. 
 
-The next step is to create a page for each post. The pages will display the full article.
+## Step 9: Create Category Page
+
+The next step is to create a page for each category.
+
+### Create `[category]` folder
+
+Create a folder named `[category]` inside the `[lang]` folder. Since we have multiple categories we will use [Dynamic Segments](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes#convention) for handling the routes for each category. Therefore the URL for each category will be based on its name.
+
+```bash
+mkdir src/app/[lang]/[category]
+```
+
+### Add `page.tsx` file
+
+Create a file called `page.tsx` in the `[category]` folder.
+
+```bash
+touch src/app/[lang]/[category]/page.tsx
+```
+
+Add the following code to `page.tsx`:
+
+```tsx
+import PageHeader from '@/app/[lang]/components/PageHeader';
+import { fetchAPI } from '@/app/[lang]/utils/fetch-api';
+import PostList from '@/app/[lang]/components/PostList';
+
+async function fetchPostsByCategory(filter: string) {
+    try {
+        const token = process.env.NEXT_PUBLIC_STRAPI_API_TOKEN;
+        const path = `/articles`;
+        const urlParamsObject = {
+            sort: { createdAt: 'desc' },
+            filters: {
+                category: {
+                    slug: filter,
+                },
+            },
+            populate: {
+                cover: { fields: ['url'] },
+                category: {
+                    populate: '*',
+                },
+                authorsBio: {
+                    populate: '*',
+                },
+            },
+        };
+        const options = { headers: { Authorization: `Bearer ${token}` } };
+        const responseData = await fetchAPI(path, urlParamsObject, options);
+        return responseData;
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+export default async function CategoryRoute({ params }: { params: { category: string } }) {
+    const filter = params.category;
+    const { data } = await fetchPostsByCategory(filter);
+
+    if (data.length === 0) return <div>Not Posts In this category</div>;
+
+    const { name, description } = data[0]?.attributes.category.data.attributes;
+
+    return (
+        <div>
+            <PageHeader heading={name} text={description} />
+            <PostList data={data} />
+        </div>
+    );
+}
+
+export async function generateStaticParams() {
+    return [];
+}
+```
+
+The provided code fetches and renders posts for a specific category. It exports two asynchronous functions: `CategoryRoute` and `generateStaticParams`.
+
+The `CategoryRoute` function handles rendering content for a specific category. It retrieves the category from the provided parameters, calls the `fetchPostsByCategory` function to fetch posts data for that category, and then renders a page header with the category name and description, followed by a list of posts.
+
+The `fetchPostsByCategory` function fetches posts by a given category. It constructs an API request with sorting, filtering, and population options, and retrieves the response data.
+
+The `generateStaticParams` function is used for generating static paths based on dynamic routes. In this case, it returns an empty array.
+
+Overall, the code retrieves and displays posts data for a specific category, utilizing asynchronous functions for API requests and rendering.
+
+### Test Category Page
+
+Make sure your Strapi backend server is running, then start your Next.js frontend development server.
+
+Run the following command in the `frontend` directory:
+
+```bash
+yarn dev
+```
+
+Visit `http://localhost:3000/strapi` in your browser and you should see the `strapi` category page of your blog.
+
+![Strapi Category Page]()
+
+You can test the other categories by clicking on the `category` links in the footer of your blog.
+
+![Category Links]()
+
+The category page is working and is displaying a grid of posts related to the specific category. 
+
+## Step 10: Create Article Page
+
+The next step is to create a page for each article which displays the full post.
+
+### Create `[slug]` folder
+
+Create a folder called `[slug]` in the `[category]` folder. This implies that each article will be have a route based on its `slug` as defined in the Strapi Admin Panel. The `slug` is generated from the post `title`.
+
+```bash
+mkdir src/app/[lang]/[category]/[slug]
+```
+
+Inside the `[slug]` folder, create two new files:
+- `page.tsx` for fetching and rendering the article.
+- `layout.tsx` for the layout of the Article page.
+
+```bash
+touch src/app/[lang]/[category]/[slug]/page.tsx src/app/[lang]/[category]/[slug]/layout.tsx
+```
+
+### Add `page.tsx` file
+
+Add the following code to `src/app/[lang]/[category]/[slug]/page.tsx`:
+
+```tsx
+import { fetchAPI } from '@/app/[lang]/utils/fetch-api';
+import Post from '@/app/[lang]/components/Post';
+import type { Metadata } from 'next';
+
+async function getPostBySlug(slug: string) {
+    const token = process.env.NEXT_PUBLIC_STRAPI_API_TOKEN;
+    const path = `/articles`;
+    const urlParamsObject = {
+        filters: { slug },
+        populate: {
+            cover: { fields: ['url'] },
+            authorsBio: { populate: '*' },
+            category: { fields: ['name'] },
+            blocks: { populate: '*' },
+        },
+    };
+    const options = { headers: { Authorization: `Bearer ${token}` } };
+    const response = await fetchAPI(path, urlParamsObject, options);
+    return response;
+}
+
+async function getMetaData(slug: string) {
+    const token = process.env.NEXT_PUBLIC_STRAPI_API_TOKEN;
+    const path = `/articles`;
+    const urlParamsObject = {
+        filters: { slug },
+        populate: { seo: { populate: '*' } },
+    };
+    const options = { headers: { Authorization: `Bearer ${token}` } };
+    const response = await fetchAPI(path, urlParamsObject, options);
+    return response.data;
+}
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+    const meta = await getMetaData(params.slug);
+    const metadata = meta[0].attributes.seo;
+
+    return {
+        title: metadata.metaTitle,
+        description: metadata.metaDescription,
+    };
+}
+
+export default async function PostRoute({ params }: { params: { slug: string } }) {
+    const { slug } = params;
+    const data = await getPostBySlug(slug);
+    if (data.data.length === 0) return <h2>no post found</h2>;
+    return <Post data={data.data[0]} />;
+}
+
+export async function generateStaticParams() {
+    const token = process.env.NEXT_PUBLIC_STRAPI_API_TOKEN;
+    const path = `/articles`;
+    const options = { headers: { Authorization: `Bearer ${token}` } };
+    const articleResponse = await fetchAPI(
+        path,
+        {
+            populate: ['category'],
+        },
+        options
+    );
+
+    return articleResponse.data.map(
+        (article: {
+            attributes: {
+                slug: string;
+                category: {
+                    slug: string;
+                };
+            };
+        }) => ({ slug: article.attributes.slug, category: article.attributes.slug })
+    );
+}
+```
+
+The `page.tsx` file for individual posts displays an article by fetching post data using the `fetchAPI` helper function and uses the `Post` component to render the page.
+
+`page.tsx` includes the following functions:
+
+- `getPostBySlug`: Fetches post data based on a given slug, including `cover`, `authorsBio`, and `category`.
+- `getMetaData`: Fetches metadata for a post based on a given slug.
+- `generateMetadata`: Generates metadata for a post using the `getMetadata` function and returns the `title` and `description` of a post.
+- `PostRoute`: Renders the post page based on a given `slug`. The function retrieves post data using the `getPostBySlug` function and renders the post using the `Post` component.
+- `generateStaticParams`: Generates static parameters for articles by fetching the articles' data and mapping it to an array with the `slug` and `category` attributes as strings.
+
+### Add `Post` component
+
+`page.tsx` imports a `Post` component for rendering posts. Create a `Post.tsx` file in the `components` folder.
+
+```bash
+touch src/app/[lang]/components/Post.tsx
+```
+
+Add the following code to `Post.tsx`:
+
+```tsx
+import { formatDate, getStrapiMedia } from '@/app/[lang]/utils/api-helpers';
+import { postRenderer } from '@/app/[lang]/utils/post-renderer';
+import Image from 'next/image';
+
+interface Article {
+    id: number;
+    attributes: {
+        title: string;
+        description: string;
+        slug: string;
+        cover: {
+            data: {
+                attributes: {
+                    url: string;
+                };
+            };
+        };
+        authorsBio: {
+            data: {
+                attributes: {
+                    name: string;
+                    avatar: {
+                        data: {
+                            attributes: {
+                                url: string;
+                            };
+                        };
+                    };
+                };
+            };
+        };
+        blocks: any[];
+        publishedAt: string;
+    };
+}
+
+export default function Post({ data }: { data: Article }) {
+    const { title, description, publishedAt, cover, authorsBio } = data.attributes;
+    const author = authorsBio.data?.attributes;
+    const imageUrl = getStrapiMedia(cover.data?.attributes.url);
+    const authorImgUrl = getStrapiMedia(authorsBio.data?.attributes.avatar.data.attributes.url);
+
+    return (
+        <article className="space-y-8 dark:bg-black dark:text-gray-50">
+            {imageUrl && (
+                <Image
+                    src={imageUrl}
+                    alt="article cover image"
+                    width={400}
+                    height={400}
+                    className="w-full h-96 object-cover rounded-lg"
+                />
+            )}
+            <div className="space-y-6">
+                <h1 className="leading-tight text-5xl font-bold ">{title}</h1>
+                <div className="flex flex-col items-start justify-between w-full md:flex-row md:items-center dark:text-gray-400">
+                    <div className="flex items-center md:space-x-2">
+                        {authorImgUrl && (
+                            <Image
+                                src={authorImgUrl}
+                                alt="article cover image"
+                                width={400}
+                                height={400}
+                                className="w-14 h-14 border rounded-full dark:bg-gray-500 dark:border-gray-700"
+                            />
+                        )}
+                        <p className="text-md dark:text-violet-400">
+                            {author && author.name} • {formatDate(publishedAt)}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="dark:text-gray-100">
+                <p>{description}</p>
+
+                {data.attributes.blocks.map((section: any, index: number) => postRenderer(section, index))}
+            </div>
+        </article>
+    );
+}
+```
+
+The `Post` component renders details of an article. It expects a `data` prop with specific attributes which include a `title`, `description`, `slug`, `cover`, `authorsBio`, `blocks`, and `publishedAt`. It renders an article based on these attributes.
+
+It maps over the `data.attributes.blocks` array and uses a `postFenderer` utility function to render each section of the article. 
+
+### Create `postRenderer` utility
+
+Let's create the `postRenderer` utility function to be used by the `Post` component.
+
+Create a new file named `post-renderer.tsx` inside the `utils` folder.
+
+```bash
+touch src/app/[lang]/utils/post-renderer.tsx
+```
+
+Add the following code to `post-renderer.tsx`:
+
+```tsx
+import RichText from "../components/RichText";
+import ImageSlider from "../components/ImageSlider";
+import Quote from "../components/Quote";
+import Media from "../components/Media";
+import VideoEmbed from "../components/VideoEmbed";
+
+export function postRenderer(section: any, index: number) {
+  switch (section.__component) {
+    case "shared.rich-text":
+      return <RichText key={index} data={section} />;
+    case "shared.slider":
+      return <ImageSlider key={index} data={section} />;
+    case "shared.quote": 
+      return <Quote key={index} data={section} />;
+    case "shared.media":
+      return <Media key={index} data={section} />;
+    case "shared.video-embed":
+      return <VideoEmbed key={index} data={section} />;
+    default:
+      return null;
+  }
+}
+```
+
+The `postRenderer` utility function is used to dynamically render different types of sections within a post based on the `__component` value of each section. This could be a `RichText`, `ImageSlider`, `Quote`, `Media`, or `VideoEmbed` component
+
+Next, we will create the respective components required by the `postRenderer` utility.
+
+Create the `RichText`, `ImageSlider`, `Quote`, `Media`, and `VideoEmbed` components:
+
+```bash
+touch src/app/[lang]/components/{RichText,ImageSlider,Quote,Media,VideoEmbed}.tsx
+```
+
+### Add `RichText` Component
+
+Add the following code to `RichText.tsx`:
+
+```tsx
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
+interface RichTextProps {
+  data: {
+    body: string;
+  };
+}
+
+export default function RichText({ data }: RichTextProps) {
+  return (
+    <section className="rich-text py-6 dark:bg-black dark:text-gray-50 ">
+      <Markdown children={data.body} remarkPlugins={[remarkGfm]} />
+    </section>
+  );
+}
+```
+
+The `RichText` component converts markdown-formatted text into HTML and renders it as a section of rich text content. It relies on the `Markdown` component from the `react-markdown` library and the `remark-gfm` plugin for rendering Markdown syntax with additional features like tables.
+
+### Add `ImageSlider` component
+
+Add the following code to `ImageSlider.tsx`:
+
+```tsx
+"use client";
+import { Fade } from "react-slideshow-image";
+import { getStrapiMedia } from "../utils/api-helpers";
+import Image from "next/image";
+
+interface Image {
+  id: number;
+  attributes: {
+    alternativeText: string | null;
+    caption: string | null;
+    url: string;
+  };
+}
+
+interface SlidShowProps {
+  files: {
+    data: Image[];
+  };
+}
+
+export default function Slideshow({ data }: { data: SlidShowProps }) {
+  return (
+    <div className="slide-container">
+      <Fade>
+        {data.files.data.map((fadeImage: Image, index) => {
+          const imageUrl = getStrapiMedia(fadeImage.attributes.url);
+          return (
+            <div key={index}>
+              {imageUrl && <Image className="w-full h-96 object-cover rounded-lg" height={400} width={600} alt="alt text" src={imageUrl} />}
+            </div>
+          );
+        })}
+      </Fade>
+    </div>
+  );
+}
+```
+
+The `Slideshow` component creates an image slider by rendering a series of images based on the provided data. The `Fade` component from the `react-slideshow-image` library provides the sliding effect, and the `Image` component from Next.js handles the rendering of each image.
+
+### Add `Quote` component
+
+Add the following code to `Quote.tsx`:
+
+```tsx
+interface QuoteProps {
+    data: {
+      title: string;
+      body: string;
+      author: string;
+    };
+  }
+  
+  export default function Quote({ data }: QuoteProps) {
+    const { title, body, author } = data;
+  
+    return (
+      <div className="flex flex-col items-center mx-12 lg:mx-0 py-44">
+        {title && <h2 className="my-4">{title}</h2>}
+        <div className="relative text-center">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 512 512"
+            fill="currentColor"
+            className="absolute top-0 -left-4 w-4 h-4 dark:text-gray-700"
+          >
+            <path d="M232,246.857V16H16V416H54.4ZM48,48H200V233.143L48,377.905Z"></path>
+            <path d="M280,416h38.4L496,246.857V16H280ZM312,48H464V233.143L312,377.905Z"></path>
+          </svg>
+          <p className="px-6 py-1 text-lg italic">{body}</p>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 512 512"
+            fill="currentColor"
+            className="absolute bottom-0 -right-4 w-4 h-4 dark:text-gray-700"
+          >
+            <path d="M280,185.143V416H496V16H457.6ZM464,384H312V198.857L464,54.1Z"></path>
+            <path d="M232,16H193.6L16,185.143V416H232ZM200,384H48V198.857L200,54.1Z"></path>
+          </svg>
+        </div>
+        <span className="w-12 h-1 my-2 rounded-lg dark:bg-violet-400"></span>
+        {author ? <p>{author}</p> : "unknown"}
+      </div>
+    );
+  }
+```
+
+The `Quote` component renders a blockquote with a `title`, `body`, and an optional `author`. The quote symbols are displayed using SVG icons, and appropriate styling classes are applied for visual presentation.
+
+### Add `Media` component
+
+Add the following code to `Media.tsx`:
+
+```tsx
+import { getStrapiMedia } from "../utils/api-helpers";
+import Image from "next/image";
+
+interface MediaProps {
+  file: {
+    data: {
+      id: string;
+      attributes: {
+        url: string;
+        name: string;
+        alternativeText: string;
+      };
+    };
+  };
+}
+
+export default function Media({ data }: { data: MediaProps }) {
+  const imgUrl = getStrapiMedia(data.file.data.attributes.url);
+  return (
+    <div className="flex items-center justify-center mt-8 lg:mt-0 h-72 sm:h-80 lg:h-96 xl:h-112 2xl:h-128">
+      <Image
+        src={imgUrl || ""}
+        alt={data.file.data.attributes.alternativeText || "none provided"}
+        className="object-cover w-full h-full rounded-lg overflow-hidden"
+        width={400}
+        height={400}
+      />
+    </div>
+  );
+}
+```
+
+The `Media` component renders an image or media file using the Next.js `Image` component. The image is displayed with rounded corners and is set to a specific width and height. The `getStrapiMedia` function is used to retrieve the media URL.
+
+### Add `VideoEmbed` component
+
+Add the following code to `VideoEmbed.tsx`:
+
+```tsx
+import React from "react";
+
+interface VideoEmbedProps {
+  id: number;
+  url: string;
+  width?: string;
+  height?: string;
+}
+
+const getEmbedUrl = (videoUrl: string): string | null => {
+  const youtubeRegex =
+    /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|watch\?v%3D)([\w-]{11}).*/;
+  const youtubeMatch = videoUrl.match(youtubeRegex);
+
+  if (youtubeMatch && youtubeMatch[2].length === 11) {
+    return `https://www.youtube.com/embed/${youtubeMatch[2]}`;
+  }
+
+  // Add support for other video platforms here
+
+  return null;
+};
+
+export default function VideoEmbed({ data }: { data: VideoEmbedProps }) {
+  const embedUrl = getEmbedUrl(data.url);
+
+  if (!embedUrl) return <div>Invalid video URL</div>;
+
+  return (
+    <div className="video-embed relative pb-56.25 h-72 lg:h-[450px] overflow-hidden my-8">
+      <iframe
+        title="video"
+        src={embedUrl || ""}
+        width={data.width || "100%"}
+        height={data.height || "100%"}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+        className="absolute top-0 left-0 w-full h-full"
+      />
+    </div>
+  );
+}
+```
+
+The `VideoEmbed` component renders an embedded video based on the provided URL. It supports YouTube videos by extracting the video ID and creating an embed URL. If the URL is invalid, it displays an error message. The embedded video is displayed within a container with specified dimensions, and the iframe allows for various video playback features.
+
+### Add Layout
+
+Add the following code to `src/app/[lang]/[category]/[slug]/layout.tsx`:
+
+```tsx
+import React from "react";
+
+import ArticleSelect from "@/app/[lang]/components/ArticleSelect";
+import { fetchAPI } from "@/app/[lang]/utils/fetch-api";
+
+async function fetchSideMenuData(filter: string) {
+  try {
+    const token = process.env.NEXT_PUBLIC_STRAPI_API_TOKEN;
+    const options = { headers: { Authorization: `Bearer ${token}` } };
+
+    const categoriesResponse = await fetchAPI(
+      "/categories",
+      { populate: "*" },
+      options
+    );
+
+    const articlesResponse = await fetchAPI(
+      "/articles",
+      filter
+        ? {
+            filters: {
+              category: {
+                name: filter,
+              },
+            },
+          }
+        : {},
+      options
+    );
+
+    return {
+      articles: articlesResponse.data,
+      categories: categoriesResponse.data,
+    };
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+interface Category {
+  id: number;
+  attributes: {
+    name: string;
+    slug: string;
+    articles: {
+      data: Array<{}>;
+    };
+  };
+}
+
+interface Article {
+  id: number;
+  attributes: {
+    title: string;
+    slug: string;
+  };
+}
+
+interface Data {
+  articles: Article[];
+  categories: Category[];
+}
+
+export default async function LayoutRoute({
+  params,
+  children,
+}: {
+  children: React.ReactNode;
+  params: {
+    slug: string;
+    category: string;
+  };
+}) {
+  const { category } = params;
+  const { categories, articles } = (await fetchSideMenuData(category)) as Data;
+
+  return (
+    <section className="container p-8 mx-auto space-y-6 sm:space-y-12">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 lg:gap-4">
+        <div className="col-span-2">{children}</div>
+        <aside>
+          <ArticleSelect
+            categories={categories}
+            articles={articles}
+            params={params}
+          />
+        </aside>
+      </div>
+    </section>
+  );
+}
+
+export async function generateStaticParams() {
+  const token = process.env.NEXT_PUBLIC_STRAPI_API_TOKEN;
+  const path = `/articles`;
+  const options = { headers: { Authorization: `Bearer ${token}` } };
+  const articleResponse = await fetchAPI(
+    path,
+    {
+      populate: ["category"],
+    },
+    options
+  );
+
+  return articleResponse.data.map(
+    (article: {
+      attributes: {
+        slug: string;
+        category: {
+          slug: string;
+        };
+      };
+    }) => ({ slug: article.attributes.slug, category: article.attributes.slug })
+  );
+}
+```
+
+`layout.tsx` serves as a wrapper for the content to be rendered on the article page by its child components. It has the following functions:
+
+- `fetchSideMenuData`: Fetches data (`articles` and `categories`) for the side menu using the `fetchAPI`.
+- `LayoutRoute`: Makes use of the `fetchSideMenuData` function to fetch the necessary data based on the `category` received from the `params`. It then renders the content within a section container with padding and spacing. The layout is divided into two columns using CSS grid: the first column contains the `children` components, and the second column contains the `ArticleSelect` component, which receives the fetched `categories`, `articles`, and `params` as props.
+- `generateStaticParams`: Retrieves article data from the backend, including the article's `slug` and its associated `category`. It returns an array of objects containing the `slug` and `category` for each article.
+
+### Add `ArticleSelect` component
+
+Create a file named `ArticleSelect.tsx` inside the `components` folder:
+
+```bash
+touch src/app/[lang]/components/ArticleSelect.tsx
+```
+
+Add the following code to `ArticleSelect.tsx`:
+
+```tsx
+import React from "react";
+import Link from "next/link";
+
+interface Category {
+  id: number;
+  attributes: {
+    name: string;
+    slug: string;
+    articles: {
+      data: Array<{}>;
+    };
+  };
+}
+
+interface Article {
+  id: number;
+  attributes: {
+    title: string;
+    slug: string;
+  };
+}
+
+function selectedFilter(current: string, selected: string) {
+  return current === selected
+    ? "px-3 py-1 rounded-lg hover:underline dark:bg-violet-700 dark:text-gray-100"
+    : "px-3 py-1 rounded-lg hover:underline dark:bg-violet-400 dark:text-gray-900";
+}
+
+export default function ArticleSelect({
+  categories,
+  articles,
+  params,
+}: {
+  categories: Category[];
+  articles: Article[];
+  params: {
+    slug: string;
+    category: string;
+  };
+}) {
+
+  return (
+    <div className="p-4 rounded-lg dark:bg-gray-900 min-h-[365px] relative">
+      <h4 className="text-xl font-semibold">Browse By Category</h4>
+
+      <div>
+        <div className="flex flex-wrap py-6 space-x-2 dark:border-gray-400">
+          {categories.map((category: Category) => {
+            if (category.attributes.articles.data.length === 0) return null;
+            return (
+              <Link
+                href={`/${category.attributes.slug}`}
+                className={selectedFilter(
+                  category.attributes.slug,
+                  params.category
+                )}
+              >
+                #{category.attributes.name}
+              </Link>
+            );
+          })}
+          <Link href={"/"} className={selectedFilter("", "filter")}>
+            #all
+          </Link>
+        </div>
+
+        <div className="space-y-2">
+          <h4 className="text-lg font-semibold">Other Posts You May Like</h4>
+          <ul className="ml-4 space-y-1 list-disc">
+            {articles.map((article: Article) => {
+              return (
+                <li>
+                  <Link
+                    rel="noopener noreferrer"
+                    href={`/${params.category}/${article.attributes.slug}`}
+                    className={`${
+                      params.slug === article.attributes.slug &&
+                      "text-violet-400"
+                    }  hover:underline hover:text-violet-400 transition-colors duration-200`}
+                  >
+                    {article.attributes.title}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+This component is responsible for rendering a side menu that allows users to browse articles by category and displays a list of related articles. It displays category links and a list of related articles.
+
+There is a helper function called `selectedFilter` that determines the CSS class based on the currently selected `category`.
+
+A side menu section is rendered with a title "Browse By Category". It then iterates over the `categories` array and renders links for each `category`. If a `category` has no associated articles, it will be skipped. The link's appearance is determined by the `selectedFilter` function.
+
+At the end of the side menu, there is a section titled "Other Posts You May Like". It renders a list of related articles based on the `articles` array. Each article is rendered as a list item with a link to the corresponding article's URL.
+
+### Test Article Page
+
+Make sure your Strapi backend server is running, then start your Next.js frontend development server.
+
+Run the following command in the `frontend` directory:
+
+```bash
+yarn dev
+```
+
+Visit `http://localhost:3000` in your browser and you should see the blog home page. Click on any one of the articles and you should see a full article.
+
+![Single Article Page]()
+
+## Conclusion
+
+In conclusion, this article provided a comprehensive guide on building a blog website using Strapi for the backend and Next.js for the frontend. The tutorial covered various steps, including setting up the project folder, creating a Strapi app, seeding the data, setting up Next.js app, configuring Strapi API token, setting up middleware, fetching data from Strapi, creating the home page for the blog, creating category pages and creating a single article page.
+
+By following the step-by-step instructions and code examples, readers learned how to leverage the power of Strapi and Next.js to create a fully functional blog website. They learned how to fetch data from the Strapi API, display articles in a neat blog-like format, implement pagination, and handle internationalization.
+
+Overall, this tutorial provided developers with the necessary knowledge and resources to build their own blog website using the Next.js and Strapi technologies. By combining the flexibility of Strapi's content management system with the powerful frontend capabilities of Next.js, developers can create dynamic and customizable blogs tailored to their specific needs.
+
+
+
+
+
+
+
+
+
 
 
 
