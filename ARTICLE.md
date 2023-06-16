@@ -51,11 +51,11 @@ The `--quickstart` flag sets up your Strapi app with an [SQLite](https://www.sql
 
 Visit `http://localhost:1337/admin` in your browser and register your details in the Strapi Admin Registration Form.
 
-![Strapi Admin Registration Form]()
+![Strapi Admin Registration Form](https://i.imgur.com/OWSA5zP.png)
 
 After registering your admin user, you should see the `Strapi Dashboard` in your browser.
 
-![Strapi Admin Dashboard]()
+![Strapi Admin Dashboard](https://i.imgur.com/ydaKhl9.png)
 
 ## Step 3: Seeding The Data
 
@@ -92,7 +92,7 @@ yarn develop
 
 In your browser, login to your admin panel. You should see the newly imported `content` and `collection types`.
 
-![Updated Dashboard]()
+![Updated Dashboard](https://i.imgur.com/XguNXME.png)
 
 ## Step 4: Create a standard Next.js app
 
@@ -104,7 +104,7 @@ yarn create next-app
 
 On installation, you'll see some prompts. Name your project `frontend` and refer to the image below for the other responses.
 
-![Create Next App Prompts]()
+![Create Next App Prompts](https://i.imgur.com/KIXosho.png)
 
 Add the following dependencies to your `frontend` Next app: `@types/negotiator`, `negotiator`, `@types/qs`, `qs`, `classnames`, `react-icons`, `react-markdown`, `react-slideshow-image`, `remark-gfm`, `@formatjs/intl-localematcher` for use later.
 
@@ -140,7 +140,7 @@ Go back to your Strapi Admin panel to create the API token to be used for displa
 
 Inside your Strapi Admin Panel, click on `Settings`, select `API Tokens` and click on the `+ Create new API Token` button.
 
-![Create new API Token]()
+![Create new API Token](https://i.imgur.com/zBbwPQ3.png)
 
 Configure your API Token with the following details:
 
@@ -149,7 +149,7 @@ Configure your API Token with the following details:
 - Token duration: `Unlimited`
 - Token type: `Custom`
 
-![Public API Token Content Details]()
+![Public API Token Content Details](https://i.imgur.com/2OMPlV5.png)
 
 Configure your API Token with the following permissions:
 
@@ -1278,7 +1278,7 @@ yarn dev
 
 Visit `http://localhost:3000` in your browser and you should see the home page of your blog.
 
-![Blog Home Page]()
+![Blog Home Page](https://i.imgur.com/yKIMWiC.png)
 
 Great! The home page is working and is displaying a grid of all posts as expected. 
 
@@ -1381,11 +1381,11 @@ yarn dev
 
 Visit `http://localhost:3000/strapi` in your browser and you should see the `strapi` category page of your blog.
 
-![Strapi Category Page]()
+![Strapi Category Page](https://i.imgur.com/Ry1rNwx.png)
 
 You can test the other categories by clicking on the `category` links in the footer of your blog.
 
-![Category Links]()
+![Category Links](https://i.imgur.com/dMTzf5E.png)
 
 The category page is working and is displaying a grid of posts related to the specific category. 
 
@@ -2105,7 +2105,7 @@ yarn dev
 
 Visit `http://localhost:3000` in your browser and you should see the blog home page. Click on any one of the articles and you should see a full article.
 
-![Single Article Page]()
+![Single Article Page](https://i.imgur.com/v7auyX2.png)
 
 ## Conclusion
 
