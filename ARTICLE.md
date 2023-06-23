@@ -4,26 +4,26 @@ Learn to create a blog website using Strapi for the backend and Next.js for the 
 
 ## Introduction
 
-[Strapi is the leading open-source composable Content Management System (CMS)](https://strapi.io). It is 100% Javascript, based on Node.js, and used to build RESTful APIs and GraphQL APIs. It also has a cloud SAAS, ☁ [Strapi Cloud](https://strapi.io/cloud) ☁ - a fully managed, composable, and collaborative platform to boost your content velocity!
+[Strapi is the leading open-source composable Content Management System (CMS)](https://strapi.io). It is 100% JavaScript, based on Node.js, and used to build RESTful APIs and GraphQL APIs. It also has a cloud SAAS, ☁ [Strapi Cloud](https://strapi.io/cloud) ☁ - a fully managed, composable, and collaborative platform to boost your content velocity!
 
 Strapi enables developers to build projects faster with a flexible and customizable platform for managing content. Check out the [Strapi Quickstart](https://docs.strapi.io/dev-docs/quick-start) guide for a brief intro.
 
-[The Strapi Team made a New Strapi Starter](https://strapi.io/blog/introducing-the-new-strapi-starter-with-nextjs13-tailwind-and-typescript) using Next.js 13, Tailwind, and TypeScript. In this tutorial, you will learn to create a blog website based off of the new Strapi Starter. The blog will use Strapi for the backend and Next.js 13 for the frontend.
+[The Strapi Team made a New Strapi Starter](https://strapi.io/blog/introducing-the-new-strapi-starter-with-nextjs13-tailwind-and-typescript) using Next.js 13, Tailwind, and TypeScript. In this tutorial, you will learn to create a blog website based on the new Strapi Starter. The blog will use Strapi for the backend and Next.js 13 for the frontend.
 
 ## Before Getting Started
 
-Here's the [final result of the blog website]() you will build if you are curious to see it. Check out the [project repo here]().
+Check out the [project repo here](https://github.com/Marktawa/blog-strapi).
 
 ## Prerequisites
 
 - This tutorial uses Strapi `v4.10.x`
-- Node `v16.x.x` or `v18.x.x`. You can [download Node.js here.]()
-- yarn `v1.22.x`. You can download [yarn here.]()
+- Node `v16.x.x` or `v18.x.x`. You can [download Node.js here.](https://nodejs.org/en/download)
+- yarn `v1.22.x`. You can download [yarn here.](https://yarnpkg.com/package/download)
 - Familiarity with Linux shell.
 
-## Step 1: Setup project folder
+## Setup Project folder
 
-Open up your terminal and create a folder named `blog-strapi` to store your project files.
+Open up your terminal and create a `blog-strapi` folder to store your project files.
 
 ```bash
 mkdir blog-strapi
@@ -35,17 +35,21 @@ Navigate into `blog-strapi`.
 cd blog-strapi
 ```
 
-## Step 2: Create a standard Strapi app
+## Create Standard Strapi App
 
 Create your Strapi app in a folder named `backend`.
 
 ```bash
-yarn create strapi-app backend --quickstart
+npx create-strapi-app@4.10.4 backend --quickstart
 ```
+
+> **NOTE:**
+>
+> At the time of making this tutorial there was a bug in the file import in versions after 4.10.4, so please use this version for a smooth experience.
 
 The `--quickstart` flag sets up your Strapi app with an [SQLite](https://www.sqlite.org/index.html) database and automatically starts your server on port `1337`.
 
-> **TIP**
+> **TIP:**
 >
 > If the server is not already running, in your terminal, `cd` into the `backend` folder and run `yarn develop` to launch it.
 
@@ -57,13 +61,17 @@ After registering your admin user, you should see the `Strapi Dashboard` in your
 
 ![Strapi Admin Dashboard](https://i.imgur.com/ydaKhl9.png)
 
-## Step 3: Seeding The Data
+## Seeding The Data
 
 Next, you will seed your Strapi app database with data to use for the blog post. This includes articles, authors, images, categories, and so on. The [Data import](https://docs.strapi.io/dev-docs/data-management/import) feature is quite handy in that regard.
 
 Go back to your terminal and stop your Strapi backend server by pressing `CTRL` plus `C` on your keyboard. 
 
 Update the schema for your Strapi app so that the data won't be lost when you perform a data import. Make sure you are executing the command in the root of your project folder `blog-strapi`.
+
+> **NOTE:**
+>
+> You may need to install `wget` via `brew` for Mac users.
 
 ```bash
 wget https://raw.githubusercontent.com/Marktawa/blog-strapi-archives/main/seed-schema.tar
@@ -94,9 +102,9 @@ In your browser, login to your admin panel. You should see the newly imported `c
 
 ![Updated Dashboard](https://i.imgur.com/XguNXME.png)
 
-## Step 4: Create a standard Next.js app
+## Create a Standard Next.js App
 
-In a new terminal session, change directory to `blog-strapi` and run the following command:
+In a new terminal session, change the directory to `blog-strapi` and run the following command:
 
 ```bash
 yarn create next-app
@@ -126,7 +134,7 @@ Delete the following auto-generated files in your `frontend` directory as we wil
 - `src/app/page.tsx`
 - `src/app/globals.css`
 
-## Step 5: Set up Strapi API Token
+## Set up Strapi API Token
 
 Create a `.env` file in the root of your `frontend` directory and paste the following environment variables:
 
@@ -180,7 +188,7 @@ NEXT_PUBLIC_STRAPI_API_URL=http://localhost:1337
 
 Of course, the `NEXT_PUBLIC_STRAPI_API_TOKEN` for your Strapi server app will be different from the one shown above.
 
-## Step 6: Setup middleware
+## Setup Middleware
 
 Create a `i18n-config.ts` file in the root of your `frontend` folder to set up the internationalization configuration.
 
@@ -273,11 +281,11 @@ export const config = {
 
 The `middleware.ts ` file imports `NextRequest` and `NextResponse` types to handle incoming requests and generate responses in Next.js. It imports the `i18n` object from the `i18n-config` module we created earlier to access the available locales. The `matchLocale` function is used for matching and determining the best locale based on the request headers and available locales.
 
-## Step 7: Fetch data from Strapi
+## Fetch Data From Strapi
 
 In this step we will create two files, `api-helpers.ts` and `fetch-api.tsx` to fetch data from the Strapi API backend.
 
-In your `frontend/src/app` directory, create a new directory named `[lang]` for handling the locales we defined in `i18n-config.ts`. This handled through Next.js' [dynamic routes](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes) feature.
+In your `frontend/src/app` directory, create a new directory named `[lang]` for handling the locales we defined in `i18n-config.ts`. This is handled through Next.js' [dynamic routes](https://nextjs.org/docs/pages/building-your-application/routing/dynamic-routes) feature.
 
 ```bash
 mkdir frontend/src/app/[lang]
@@ -414,9 +422,9 @@ const nextConfig = {
 module.exports = nextConfig
 ```
 
-## Step 8: Create Home Page for blog
+## Create Home Page for Blog
 
-In this step, you will create a home page for your blog frontend. The home page in this case will display a list of all the articles.
+​​You will create a home page for your blog frontend in this step. In this case, the home page will display a list of all the articles.
 
 ### Add `page.tsx` file
 
@@ -1276,13 +1284,13 @@ Run the following command in the `frontend` directory:
 yarn dev
 ```
 
-Visit `http://localhost:3000` in your browser and you should see the home page of your blog.
+Visit `http://localhost:3000` in your browser and you should your blog’s home page..
 
 ![Blog Home Page](https://i.imgur.com/yKIMWiC.png)
 
 Great! The home page is working and is displaying a grid of all posts as expected. 
 
-## Step 9: Create Category Page
+## Create Category Page
 
 The next step is to create a page for each category.
 
@@ -1387,11 +1395,11 @@ You can test the other categories by clicking on the `category` links in the foo
 
 ![Category Links](https://i.imgur.com/dMTzf5E.png)
 
-The category page is working and is displaying a grid of posts related to the specific category. 
+The category page should work and display a grid of posts related to the specific category.
 
-## Step 10: Create Article Page
+## Create Article Page
 
-The next step is to create a page for each article which displays the full post.
+The next step is to create a page for each article that displays the full post.
 
 ### Create `[slug]` folder
 
@@ -1595,7 +1603,7 @@ export default function Post({ data }: { data: Article }) {
 
 The `Post` component renders details of an article. It expects a `data` prop with specific attributes which include a `title`, `description`, `slug`, `cover`, `authorsBio`, `blocks`, and `publishedAt`. It renders an article based on these attributes.
 
-It maps over the `data.attributes.blocks` array and uses a `postFenderer` utility function to render each section of the article. 
+It maps over the `data.attributes.blocks` array and uses a `postFenderer` utility function to render each article section. 
 
 ### Create `postRenderer` utility
 
@@ -1975,7 +1983,7 @@ export async function generateStaticParams() {
 }
 ```
 
-`layout.tsx` serves as a wrapper for the content to be rendered on the article page by its child components. It has the following functions:
+`layout.tsx` serves as a wrapper for the content rendered on the article page by its child components. It has the following functions:
 
 - `fetchSideMenuData`: Fetches data (`articles` and `categories`) for the side menu using the `fetchAPI`.
 - `LayoutRoute`: Makes use of the `fetchSideMenuData` function to fetch the necessary data based on the `category` received from the `params`. It then renders the content within a section container with padding and spacing. The layout is divided into two columns using CSS grid: the first column contains the `children` components, and the second column contains the `ArticleSelect` component, which receives the fetched `categories`, `articles`, and `params` as props.
@@ -2089,7 +2097,7 @@ This component is responsible for rendering a side menu that allows users to bro
 
 There is a helper function called `selectedFilter` that determines the CSS class based on the currently selected `category`.
 
-A side menu section is rendered with a title "Browse By Category". It then iterates over the `categories` array and renders links for each `category`. If a `category` has no associated articles, it will be skipped. The link's appearance is determined by the `selectedFilter` function.
+A side menu section is rendered with the title "Browse By Category". It then iterates over the `categories` array and renders links for each `category`. If a `category` has no associated articles, it will be skipped. The link's appearance is determined by the `selectedFilter` function.
 
 At the end of the side menu, there is a section titled "Other Posts You May Like". It renders a list of related articles based on the `articles` array. Each article is rendered as a list item with a link to the corresponding article's URL.
 
@@ -2109,11 +2117,11 @@ Visit `http://localhost:3000` in your browser and you should see the blog home p
 
 ## Conclusion
 
-In conclusion, this article provided a comprehensive guide on building a blog website using Strapi for the backend and Next.js for the frontend. The tutorial covered various steps, including setting up the project folder, creating a Strapi app, seeding the data, setting up Next.js app, configuring Strapi API token, setting up middleware, fetching data from Strapi, creating the home page for the blog, creating category pages and creating a single article page.
+In conclusion, this article provided a comprehensive guide on building a blog website using Strapi for the backend and Next.js for the frontend. The tutorial covered various steps, including setting up the project folder, creating a Strapi app, seeding the data, setting up the Next.js app, configuring the Strapi API token, setting up middleware, fetching data from Strapi, creating the home page for the blog, creating category pages and creating a single article page.
 
-By following the step-by-step instructions and code examples, readers learned how to leverage the power of Strapi and Next.js to create a fully functional blog website. They learned how to fetch data from the Strapi API, display articles in a neat blog-like format, implement pagination, and handle internationalization.
+By following the step-by-step instructions and code examples, you learned how to leverage the power of Strapi and Next.js to create a fully functional blog website. They learned how to fetch data from the Strapi API, display articles in a neat blog-like format, implement pagination, and handle internationalization.
 
-Overall, this tutorial provided developers with the necessary knowledge and resources to build their own blog website using the Next.js and Strapi technologies. By combining the flexibility of Strapi's content management system with the powerful frontend capabilities of Next.js, developers can create dynamic and customizable blogs tailored to their specific needs.
+Overall, this tutorial gave developers the necessary knowledge and resources to build their own blog website using Next.js and Strapi. By combining the flexibility of Strapi's CMS with the powerful frontend capabilities of Next.js, you can create dynamic and customizable blogs tailored to their specific needs.
 
 
 
